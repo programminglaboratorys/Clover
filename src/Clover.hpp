@@ -82,9 +82,13 @@ namespace Clover {
 
         Version() = default;
 
-        Version(const string_view str) {
+        Version(const string_view str) noexcept {
             parse(str);
         }
+
+        Version(uint16_t major, uint16_t minor, uint16_t patch) noexcept
+			: major(major), minor(minor), patch(patch) {
+		}
 
         void parse(const string_view str) noexcept {
             uint32_t parts[3] = { 0, 0, 0 };
@@ -176,6 +180,10 @@ namespace Clover {
         VersionConstraint(const string_view str) {
             parse(str);
         }
+
+        VersionConstraint(VersionOp op, Version ver) noexcept : op(op), target(ver) {};
+
+        VersionConstraint(VersionOp op, uint16_t major, uint16_t minor, uint16_t patch) noexcept : op(op), target(major, minor, patch) {}
 
         void parse(const string_view str) noexcept {
             if (str.empty()) return;
