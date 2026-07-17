@@ -15,7 +15,7 @@ namespace Clover {
     public:
         constexpr string_view() noexcept = default;
 
-        string_view(const char* str) noexcept
+        constexpr string_view(const char* str) noexcept
             : m_ptr(str), m_size(str ? traits_length(str) : 0) {
         }
 
@@ -23,7 +23,7 @@ namespace Clover {
             : m_ptr(ptr), m_size(size) {
         }
 
-        string_view(const std::string& str) noexcept
+        constexpr string_view(const std::string& str) noexcept
             : m_ptr(str.data()), m_size(str.size()) {
         }
 
@@ -35,7 +35,7 @@ namespace Clover {
         constexpr const char* begin() const noexcept { return m_ptr; }
         constexpr const char* end() const noexcept { return m_ptr + m_size; }
 
-        string_view substr(size_t pos, size_t count = -1) const noexcept {
+        constexpr string_view substr(size_t pos, size_t count = -1) const noexcept {
             if (pos >= m_size) return string_view();
             size_t rcount = (count == static_cast<size_t>(-1) || pos + count > m_size)
                 ? m_size - pos
@@ -43,7 +43,7 @@ namespace Clover {
             return string_view(m_ptr + pos, rcount);
         }
 
-        size_t find(char c, size_t pos = 0) const noexcept {
+        constexpr size_t find(char c, size_t pos = 0) const noexcept {
             for (size_t i = pos; i < m_size; ++i) {
                 if (m_ptr[i] == c) return i;
             }
@@ -80,17 +80,17 @@ namespace Clover {
 
         //
 
-        Version() = default;
+        constexpr Version() = default;
 
-        Version(const string_view str) noexcept {
+        constexpr Version(const string_view str) noexcept {
             parse(str);
         }
 
-        Version(uint16_t major, uint16_t minor, uint16_t patch) noexcept
+        constexpr Version(uint16_t major, uint16_t minor, uint16_t patch) noexcept
 			: major(major), minor(minor), patch(patch) {
 		}
 
-        void parse(const string_view str) noexcept {
+        constexpr void parse(const string_view str) noexcept {
             uint32_t parts[3] = { 0, 0, 0 };
             constexpr size_t maxParts = 3;
 
@@ -102,8 +102,11 @@ namespace Clover {
                         break;
                     }
                     idx++;
-                }
+                } else if (c == '+' || c == '-') {
+                    break;
+				}
                 else {
+                    if (c > '9' || c < '0') continue;
                     parts[idx] = parts[idx] * 10 + (c - '0');
                 }
             }
@@ -176,16 +179,16 @@ namespace Clover {
 
         //
 
-        VersionConstraint() = default;
-        VersionConstraint(const string_view str) {
+        constexpr VersionConstraint() = default;
+        constexpr VersionConstraint(const string_view str) {
             parse(str);
         }
 
-        VersionConstraint(VersionOp op, Version ver) noexcept : op(op), target(ver) {};
+        constexpr VersionConstraint(VersionOp op, Version ver) noexcept : op(op), target(ver) {};
 
-        VersionConstraint(VersionOp op, uint16_t major, uint16_t minor, uint16_t patch) noexcept : op(op), target(major, minor, patch) {}
+        constexpr VersionConstraint(VersionOp op, uint16_t major, uint16_t minor, uint16_t patch) noexcept : op(op), target(major, minor, patch) {}
 
-        void parse(const string_view str) noexcept {
+        constexpr void parse(const string_view str) noexcept {
             if (str.empty()) return;
 
             if (str == "*") {
@@ -222,7 +225,7 @@ namespace Clover {
             }
         }
 
-        bool satisfies(const Version version) const noexcept {
+        constexpr bool satisfies(const Version version) const noexcept {
             switch (op) {
             case VersionOp::Exact:     return version == target;
             case VersionOp::Greater:   return version > target;
